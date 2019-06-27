@@ -15,6 +15,7 @@ def main():
     # Initialize display
     display = pygame.display.set_mode(config["display"]["size"])
     pygame.display.set_caption(config["display"]["caption"])
+    display.fill(config["display"]["bgd_color"])
 
     # Start the game
     game = Game(display)

@@ -5,8 +5,9 @@ Configurations for the Tetris game.
 config = {
     # Display configuration
     "display": {
-        "size": (400, 800),
-        "caption": "Tetris"
+        "size": (420, 850),
+        "caption": "Tetris",
+        "bgd_color": (30, 30, 30)
     },
 
     # Game configuration
@@ -20,7 +21,7 @@ config = {
 
     # Playfield configuration
     "playfield": {
-        "area": (0, 0, 400, 800),
+        "area": (10, 40, 400, 800),
         "vanish_zone": (0, -80, 400, 80),
         "bgd_color": (10, 10, 10),
         "cell_size": (40, 40)
