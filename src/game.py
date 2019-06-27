@@ -23,6 +23,11 @@ class Game:
 
         self.changed_areas = []
 
+        self.hud = GameHUD(self)
+        self.hud.level = 0
+        self.hud.score = 0
+        self.hud.line_cleared = 0
+
         self.playfield = Playfield(self.display)
         self.tetromino = None
         self.next_tetromino = None
@@ -31,7 +36,7 @@ class Game:
         self.move_keydowns = set()
 
         self.drop_delay = {
-            "delay": self.config["drop_delay"],
+            "delay": self.config["drop_delay"][min(self.hud.level, 29)],
             "counter": 0,
             "soft_drop": False
         }
@@ -216,10 +221,27 @@ class Game:
 
     def lock_tetromino(self, *args, **kwargs):
         """Lock the tetromino and update it onto the display"""
-        self.playfield.lock_piece(self.tetromino)
+        line_cleared = self.playfield.lock_piece(self.tetromino)
         self.tetromino.clear()
         self.playfield.locked_blocks.clear()
         self.changed_areas += self.playfield.locked_blocks.draw()
+
+        if line_cleared:
+            self.hud.line_cleared += line_cleared
+
+            if line_cleared == 1:
+                self.hud.score += 30 * (self.hud.level + 1)
+            elif line_cleared == 2:
+                self.hud.score += 100 * (self.hud.level + 1)
+            elif line_cleared == 3:
+                self.hud.score += 300 * (self.hud.level + 1)
+            elif line_cleared == 4:
+                self.hud.score += 1200 * (self.hud.level + 1)
+
+            if self.hud.level != self.hud.line_cleared // 10:
+                self.hud.level = self.hud.line_cleared // 10
+                self.drop_delay["delay"] =\
+                    self.config["drop_delay"][min(self.hud.level, 29)]
 
     def restart(self):
         """Restart the game"""
@@ -229,3 +251,67 @@ class Game:
         # Draw everything
         pygame.display.flip()
 
+
+class GameHUD:
+    """Heads-up display that shows useful in-game informations"""
+
+    config = src_config["game"]["hud"]
+
+    def __init__(self, game):
+        """Initialize and instance of GameHUD"""
+        self.game = game
+        self.font = pygame.font.Font(self.config["font"]["face"],
+                                     self.config["font"]["size"])
+
+        self._level = None
+        self._score = None
+        self._line_cleared = None
+
+    @property
+    def level(self):
+        """Get the current level of the game session"""
+        return self._level
+
+    @level.setter
+    def level(self, value):
+        """Set the current level of the game session"""
+        self._level = value
+        text = f"{self._level:02}" if self._level < 100 else "99+"
+        self.draw_text(text, topleft=self.config["level_topleft"])
+
+    @property
+    def score(self):
+        """Get the current score of the game session"""
+        return self._score
+
+    @score.setter
+    def score(self, value):
+        """Set the current score of the game session"""
+        self._score = value
+        text = f"{self._score:06}" if self._score < 1000000 else "999999+"
+        self.draw_text(text, midtop=self.config["score_midtop"])
+
+    @property
+    def line_cleared(self):
+        """Get the total line cleared of the game session"""
+        return self._line_cleared
+
+    @line_cleared.setter
+    def line_cleared(self, value):
+        """Set the total line cleared of the game session"""
+        self._line_cleared = value
+        text =\
+            f"{self._line_cleared:03}" if self._line_cleared < 1000 else "999+"
+        self.draw_text(text, topright=self.config["line_cleared_topright"])
+
+    def draw_text(self, text, **kwargs):
+        """Draw the given text onto the display
+
+        The keyword arguments will be applied to the attribute of the rectangle
+        of the text.
+        """
+        surf = self.font.render(text, 1, self.config["font"]["color"],
+                                self.config["font"]["bgd_color"])
+        rect = surf.get_rect(**kwargs)
+        self.game.display.blit(surf, rect)
+        self.game.changed_areas.append(rect)

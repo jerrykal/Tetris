@@ -13,10 +13,22 @@ config = {
     # Game configuration
     "game": {
         "fps": 60,
-        "drop_delay": 48,
+        "drop_delay": [48, 43, 38, 33, 28, 23, 18, 13, 8, 6, 5, 5, 5, 4, 4, 4,
+                       3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
         "soft_drop_delay": 2,
         "das_delay": 16,
-        "entry_delay": 14
+        "entry_delay": 14,
+        "hud": {
+            "font": {
+                "face": "./assets/font.ttf",
+                "size": 15,
+                "color": (255, 255, 255),
+                "bgd_color": (30, 30, 30)
+            },
+            "level_topleft": (10, 15),
+            "score_midtop": (210, 15),
+            "line_cleared_topright": (410, 15)
+        }
     },
 
     # Playfield configuration
